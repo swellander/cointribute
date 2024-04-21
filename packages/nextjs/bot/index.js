@@ -9,7 +9,9 @@ module.exports = app => {
       // Iterate through commits
 
       const commitDetails = await Promise.all(
-        payload.commits.map(commit => fetch(`https://api.github.com/repos/${owner}/${repo}/commits/${commit.id}`)),
+        payload.commits.map(async commit =>
+          (await fetch(`https://api.github.com/repos/${owner}/${repo}/commits/${commit.id}`)).json(),
+        ),
       );
       console.log(commitDetails);
 
