@@ -8,19 +8,26 @@ module.exports = app => {
     if (payload.ref === `refs/heads/${payload.repository.default_branch}`) {
       // Iterate through commits
 
-      const commitDetails = await Promise.all(
-        payload.commits.map(commit =>
-          octokit.repos.getCommit({
-            owner,
-            repo,
-            commit_sha: commit.id,
-          }),
-        ),
-      );
+      // const commitDetails = await Promise.all(
+      //   payload.commits.map(commit =>
+      //     octokit.repos.getCommit({
+      //       owner,
+      //       repo,
+      //       commit_sha: commit.id,
+      //     }),
+      //   ),
+      // );
 
-      for (const commitDetail of commitDetails) {
-        console.log("DATA ===============");
-        console.log(commitDetail.data);
+      for (const commit of payload.commits) {
+        const prData = await octokit.request("GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls", {
+          owner,
+          repo,
+          commit_sha: commit.id,
+          headers: {
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+        });
+        console.log(prData);
         // console.log(commitDetail);
         // Check if it's a merge commit
         if (false) {
