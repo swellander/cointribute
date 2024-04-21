@@ -13,36 +13,39 @@ module.exports = app => {
           (await fetch(`https://api.github.com/repos/${owner}/${repo}/commits/${commit.id}`)).json(),
         ),
       );
-      console.log(commitDetails);
 
       for (const commitDetail of commitDetails) {
         // console.log("DATA ===============");
         // console.log(commitDetail);
         // console.log(commitDetail);
         // Check if it's a merge commit
-        if (false) {
-          // if (commit.parents && commit.parents.length > 1) {
+        if (commitDetail.parents.length > 1) {
           // Retrieve PR information associated with the merge commit
-          const commitDetails = await octokit.repos.getCommit(
-            context.repo({
-              commit_sha: commit.id,
-            }),
-          );
+          const associatedPRs = await octokit.request("GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls", {
+            owner,
+            repo,
+            commit_sha: commitDetail.sha,
+            headers: {
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+          });
 
-          // Extract PR number from commit details
-          const prNumber = commitDetails.data.parents[1].message.match(/Merge pull request #(\d+) from/)[1];
+          console.log(associatedPRs);
 
-          // Comment on the PR
-          await octokit.issues.createComment(
-            context.issue({
-              issue_number: prNumber,
-              body: "This PR has been merged.",
-            }),
-          );
+          // // Extract PR number from commit details
+          // const prNumber = commitDetails.data.parents[1].message.match(/Merge pull request #(\d+) from/)[1];
 
-          // Perform other actions for merge to default branch
-          console.log("Merge to default branch detected");
-          break; // Exit loop once a merge commit is found
+          // // Comment on the PR
+          // // await octokit.issues.createComment(
+          // //   context.issue({
+          // //     issue_number: prNumber,
+          // //     body: "This PR has been merged.",
+          // //   }),
+          // // );
+
+          // // Perform other actions for merge to default branch
+          // console.log("Merge to default branch detected");
+          // break; // Exit loop once a merge commit is found
         }
       }
     }
