@@ -19,8 +19,16 @@ module.exports = app => {
       );
 
       for (const commitDetail of commitDetails) {
+        const cDeets = await octokit.request("GET /repos/{owner}/{repo}/commits/{ref}", {
+          owner,
+          repo,
+          ref: payload.ref,
+          headers: {
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+        });
         console.log("DATA ===============");
-        console.log(commitDetail.data);
+        console.log(cDeets);
         // console.log(commitDetail);
         // Check if it's a merge commit
         if (false) {
