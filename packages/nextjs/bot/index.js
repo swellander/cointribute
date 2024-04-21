@@ -18,6 +18,7 @@ module.exports = app => {
       //   ),
       // );
 
+      console.log(payload.commits);
       for (const commit of payload.commits) {
         const prData = await octokit.request("GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls", {
           owner,
