@@ -8,16 +8,10 @@ module.exports = app => {
     if (payload.ref === `refs/heads/${payload.repository.default_branch}`) {
       // Iterate through commits
 
-      console.log(payload.commits);
       const commitDetails = await Promise.all(
-        payload.commits.map(commit =>
-          octokit.repos.getCommit({
-            owner,
-            repo,
-            commit_sha: commit.id,
-          }),
-        ),
+        payload.commits.map(commit => fetch(`https://api.github.com/repos/${owner}/${repo}/commits/${commit.id}`)),
       );
+      console.log(commitDetails);
 
       for (const commitDetail of commitDetails) {
         // console.log("DATA ===============");
