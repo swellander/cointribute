@@ -21,31 +21,35 @@ module.exports = app => {
         // Check if it's a merge commit
         if (commitDetail.parents.length > 1) {
           // Retrieve PR information associated with the merge commit
-          const associatedPRs = await octokit.request("GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls", {
-            owner,
-            repo,
-            commit_sha: commitDetail.sha,
-            headers: {
-              "X-GitHub-Api-Version": "2022-11-28",
+          const { data: associatedPRs } = await octokit.request(
+            "GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls",
+            {
+              owner,
+              repo,
+              commit_sha: commitDetail.sha,
+              headers: {
+                "X-GitHub-Api-Version": "2022-11-28",
+              },
             },
-          });
+          );
 
           console.log(associatedPRs);
+          const { number } = associatedPRs[0];
 
           // // Extract PR number from commit details
           // const prNumber = commitDetails.data.parents[1].message.match(/Merge pull request #(\d+) from/)[1];
 
-          // // Comment on the PR
-          // // await octokit.issues.createComment(
-          // //   context.issue({
-          // //     issue_number: prNumber,
-          // //     body: "This PR has been merged.",
-          // //   }),
-          // // );
+          // Comment on the PR
+          await octokit.issues.createComment(
+            context.issue({
+              issue_number: number,
+              body: "This PR has been merged.",
+            }),
+          );
 
           // // Perform other actions for merge to default branch
-          // console.log("Merge to default branch detected");
-          // break; // Exit loop once a merge commit is found
+          console.log("Merge to default branch detected");
+          break; // Exit loop once a merge commit is found
         }
       }
     }
