@@ -9,7 +9,7 @@ module.exports = app => {
     if (payload.ref === `refs/heads/${payload.repository.default_branch}`) {
       // Check if it's a merge commit
       const commits = payload.commits;
-      const isMergeCommit = commits.some(commit => commit.parents.length > 1);
+      const isMergeCommit = commits.some(commit => commit.parents?.length > 1);
 
       if (isMergeCommit) {
         // Perform actions for merge to default branch
