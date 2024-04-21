@@ -1,30 +1,13 @@
 module.exports = app => {
   app.on("push", async context => {
     const { payload, octokit } = context;
-    const owner = payload.repository.owner.login;
-    const repo = payload.repository.name;
 
     // Check if the push is to the default branch
     if (payload.ref === `refs/heads/${payload.repository.default_branch}`) {
       // Iterate through commits
-
-      const commitDetails = await Promise.all(
-        payload.commits.map(commit =>
-          octokit.repos.getCommit({
-            owner,
-            repo,
-            commit_sha: commit.id,
-          }),
-        ),
-      );
-
-      for (const commitDetail of commitDetails) {
-        console.log("DATA ===============");
-        console.log(commitDetail.data);
-        // console.log(commitDetail);
+      for (const commit of payload.commits) {
         // Check if it's a merge commit
-        if (false) {
-          // if (commit.parents && commit.parents.length > 1) {
+        if (commit.parents && commit.parents.length > 1) {
           // Retrieve PR information associated with the merge commit
           const commitDetails = await octokit.repos.getCommit(
             context.repo({
