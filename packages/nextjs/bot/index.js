@@ -1,37 +1,36 @@
-const { handleNewRepo } = require("./utils");
-
 module.exports = app => {
   app.on("push", async context => {
-    const { payload } = context;
+    const { payload, octokit } = context;
 
     // Check if the push is to the default branch
-    app.log.info(payload.ref);
     if (payload.ref === `refs/heads/${payload.repository.default_branch}`) {
-      // Check if it's a merge commit
-      const commits = payload.commits;
-      const isMergeCommit = commits.some(commit => commit.parents?.length > 1);
+      // Iterate through commits
+      for (const commit of payload.commits) {
+        // Check if it's a merge commit
+        if (commit.parents && commit.parents.length > 1) {
+          // Retrieve PR information associated with the merge commit
+          const commitDetails = await octokit.repos.getCommit(
+            context.repo({
+              commit_sha: commit.id,
+            }),
+          );
 
-      if (isMergeCommit) {
-        // Perform actions for merge to default branch
-        app.log.info("Merge to default branch detected");
+          // Extract PR number from commit details
+          const prNumber = commitDetails.data.parents[1].message.match(/Merge pull request #(\d+) from/)[1];
+
+          // Comment on the PR
+          await octokit.issues.createComment(
+            context.issue({
+              issue_number: prNumber,
+              body: "This PR has been merged.",
+            }),
+          );
+
+          // Perform other actions for merge to default branch
+          console.log("Merge to default branch detected");
+          break; // Exit loop once a merge commit is found
+        }
       }
     }
-    app.log.info({ event: context.name, action: context.payload.action });
   });
-  // app.on("installation", async context => {
-  //   for (const repoData of context.payload.repositories) {
-  //     handleNewRepo({
-  //       context,
-  //       repoData,
-  //     });
-  //   }
-  // });
-  // app.oRequestAllowancen("installation_repositories", async context => {
-  //   for (const repoData of context.payload.repositories_added) {
-  //     handleNewRepo({
-  //       context,
-  //       repoData,
-  //     });
-  //   }
-  // });
 };
